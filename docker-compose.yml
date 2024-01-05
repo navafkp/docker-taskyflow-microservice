@@ -1,0 +1,133 @@
+version: '3'
+services:
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - apiservice-container
+      - taskservice-container
+      - userservice-container
+      - notificationapp-container
+
+      
+  apiservice-container:
+    image: navafkp/apiservice:latest
+    depends_on:
+      - rabbitmq-container
+    environment:
+      - RABBITMQ_URL=amqp://taskyapp:1345@rabbitmq-container:5672
+    networks:
+      - tasky-network
+    ports:
+      - "8000:8000"
+
+
+
+  taskservice-container:
+    image: navafkp/taskservice:latest
+    depends_on:
+      - rabbitmq-container
+      - postgres-task
+    environment:
+      - DATABASE_URL=postgres://postgres:1345@postgres-task:5432/taskytask
+      - RABBITMQ_URL=amqp://taskyapp:1345@rabbitmq-container:5672
+    networks:
+      - tasky-network
+    ports:
+      - "8200:8200"
+
+
+
+  userservice-container:
+    image: navafkp/userservice:latest
+    depends_on:
+      - apiservice-container
+      - rabbitmq-container
+      - postgres-user
+      
+    environment:
+      - DATABASE_URL=postgres://postgres:1345@postgres-user:5432/taskyuser
+      - RABBITMQ_URL=amqp://taskyapp:1345@rabbitmq-container:5672
+    networks:
+        - tasky-network
+    ports:
+      - "8100:8100"
+
+
+  notificationapp-container:
+    image: navafkp/notificationservice:latest
+    depends_on:
+      - apiservice-container
+      - postgres-notification
+      - rabbitmq-container  
+    environment:
+      - DATABASE_URL=postgres://postgres:1345@postgres-notification:5432/taskynotification
+      - RABBITMQ_URL=amqp://taskyapp:1345@rabbitmq-container:5672
+    networks:
+        - tasky-network
+    ports:
+      - "8300:8300"
+
+
+
+  postgres-user:
+    image: navafkp/postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1345
+      POSTGRES_DB: taskyuser
+    networks:
+        - tasky-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5    
+
+
+  postgres-task:
+    image: navafkp/postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1345
+      POSTGRES_DB: taskytask
+    networks:
+        - tasky-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  postgres-notification:
+    image: navafkp/postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1345
+      POSTGRES_DB: taskynotification
+    networks:
+      - tasky-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  rabbitmq-container:
+    image: navafkp/rabbitmq:latest
+    environment:
+      RABBITMQ_DEFAULT_USER: taskyapp
+      RABBITMQ_DEFAULT_PASS: 1345
+    networks:
+      - tasky-network
+
+
+networks:
+  tasky-network:
+    external: true
