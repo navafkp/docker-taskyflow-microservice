@@ -12,6 +12,8 @@ services:
       - taskservice-container
       - userservice-container
       - notificationapp-container
+    networks:
+      - tasky-network
 
       
   apiservice-container:
