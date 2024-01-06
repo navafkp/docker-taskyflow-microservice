@@ -1,26 +1,28 @@
 version: '3'
 services:
       
-  apiservice-container:
+  docker-taskyflow-microservice-apiservice-container-1:
     image: navafkp/apiservice:latest
+    container_name: 'docker-taskyflow-microservice-apiservice-container-1'
     depends_on:
-      - rabbitmq-container
+      - docker-taskyflow-microservice-rabbitmq-container-1
     environment:
-      - RABBITMQ_URL=amqp://taskyapp:1345@rabbitmq-container:5672
+      - RABBITMQ_URL=amqp://taskyapp:1345@docker-taskyflow-microservice-rabbitmq-container-1:5672
     networks:
       - tasky-network
     ports:
       - "8000:8000"
 
 
-  taskservice-container:
+  docker-taskyflow-microservice-taskservice-container-1:
     image: navafkp/taskservice:latest
+    container_name: 'docker-taskyflow-microservice-taskservice-container-1'
     depends_on:
-      - rabbitmq-container
-      - postgres-task
+      - docker-taskyflow-microservice-rabbitmq-container-1
+      - docker-taskyflow-microservice-postgres-task-1
     environment:
-      - DATABASE_URL=postgres://postgres:1345@postgres-task:5432/taskytask
-      - RABBITMQ_URL=amqp://taskyapp:1345@rabbitmq-container:5672
+      - DATABASE_URL=postgres://postgres:1345@docker-taskyflow-microservice-postgres-task-1:5432/taskytask
+      - RABBITMQ_URL=amqp://taskyapp:1345@docker-taskyflow-microservice-rabbitmq-container-1:5672
     networks:
       - tasky-network
     ports:
@@ -28,31 +30,33 @@ services:
 
 
 
-  userservice-container:
+  docker-taskyflow-microservice-userservice-container-1:
     image: navafkp/userservice:latest
+    container_name: "docker-taskyflow-microservice-userservice-container-1"
     depends_on:
-      - apiservice-container
-      - rabbitmq-container
-      - postgres-user
+      - docker-taskyflow-microservice-apiservice-container-1
+      - docker-taskyflow-microservice-rabbitmq-container-1
+      - docker-taskyflow-microservice-postgres-user-1
       
     environment:
-      - DATABASE_URL=postgres://postgres:1345@postgres-user:5432/taskyuser
-      - RABBITMQ_URL=amqp://taskyapp:1345@rabbitmq-container:5672
+      - DATABASE_URL=postgres://postgres:1345@docker-taskyflow-microservice-postgres-user-1:5432/taskyuser
+      - RABBITMQ_URL=amqp://taskyapp:1345@docker-taskyflow-microservice-rabbitmq-container-1:5672
     networks:
         - tasky-network
     ports:
       - "8100:8100"
 
 
-  notificationapp-container:
+  docker-taskyflow-microservice-notificationapp-container-1:
     image: navafkp/notificationservice:latest
+    container_name: "docker-taskyflow-microservice-notificationapp-container-1"
     depends_on:
-      - apiservice-container
-      - postgres-notification
-      - rabbitmq-container  
+      - docker-taskyflow-microservice-apiservice-container-1
+      - docker-taskyflow-microservice-postgres-notification-1
+      - docker-taskyflow-microservice-rabbitmq-container-1  
     environment:
-      - DATABASE_URL=postgres://postgres:1345@postgres-notification:5432/taskynotification
-      - RABBITMQ_URL=amqp://taskyapp:1345@rabbitmq-container:5672
+      - DATABASE_URL=postgres://postgres:1345@docker-taskyflow-microservice-postgres-notification-1:5432/taskynotification
+      - RABBITMQ_URL=amqp://taskyapp:1345@docker-taskyflow-microservice-rabbitmq-container-1:5672
     networks:
         - tasky-network
     ports:
@@ -60,8 +64,9 @@ services:
 
 
 
-  postgres-user:
+  docker-taskyflow-microservice-postgres-user-1:
     image: navafkp/postgres:latest
+    container_name: 'docker-taskyflow-microservice-postgres-user-1'
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1345
@@ -75,8 +80,9 @@ services:
       retries: 5    
 
 
-  postgres-task:
+  docker-taskyflow-microservice-postgres-task-1:
     image: navafkp/postgres:latest
+    container_name: 'docker-taskyflow-microservice-postgres-task-1'
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1345
@@ -90,8 +96,9 @@ services:
       retries: 5
 
 
-  postgres-notification:
+  docker-taskyflow-microservice-postgres-notification-1:
     image: navafkp/postgres:latest
+    container_name: 'docker-taskyflow-microservice-postgres-notification-1'
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1345
@@ -105,8 +112,9 @@ services:
       retries: 5
 
 
-  rabbitmq-container:
+  docker-taskyflow-microservice-rabbitmq-container-1:
     image: navafkp/rabbitmq:latest
+    container_name: 'docker-taskyflow-microservice-rabbitmq-container-1'
     environment:
       RABBITMQ_DEFAULT_USER: taskyapp
       RABBITMQ_DEFAULT_PASS: 1345
