@@ -9,6 +9,7 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     user: "nginx:nginx"
+    entrypoint: /bin/sh -c "mkdir -p /var/cache/nginx/client_temp && chown -R nginx:nginx /var/cache/nginx && exec nginx -g 'daemon off;'"
     depends_on:
       - docker-taskyflow-microservice-apiservice-container-1
       - docker-taskyflow-microservice-taskservice-container-1
